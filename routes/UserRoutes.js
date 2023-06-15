@@ -1,5 +1,23 @@
 const express = require('express')
 const router = express.Router()
+const User = require('../models/UserModel.js')
+const crypt = require('crypto')  
+const jwt = require('jsonwebtoken')
+const settings = require('../config/settings.js')
+
+// calculating the hash
+const getHash = (text) => {
+    const hash = crypt.createHash('sha512')
+    hash.update(text) 
+    return hash.digest('hex')
+}
+
+const time = 7 * 24 * 60 * 60 * 1000
+const createToken = async(userId) => {
+    return jwt.sign({userId} , settings.jwt_secret , {
+        expiresIn:time
+    })
+}
 
 router.get('/', async (req, res) => {
     res.status(200).send('this is api route testing.')
@@ -9,7 +27,7 @@ router.get('/', async (req, res) => {
 router.post('/signup', async (req, res) => {
 
     const { firstName, lastName, email, password, confirmPassword, department, phoneNumber } = req.body
-    try {
+    // try {
         let user = await User.findOne({ email })
         if (user) return res.status(400).send({
             status: "failure",
@@ -20,8 +38,8 @@ router.post('/signup', async (req, res) => {
             firstName,
             lastName,
             email,
-            password,
-            confirmPassword,
+            password:getHash(password)
+            confirmPassword:getHash(confirmPassword),
             department,
             phoneNumber
         })
@@ -36,13 +54,13 @@ router.post('/signup', async (req, res) => {
             status: "success",
             message: "User registered successfully"
         })
-    } catch (error) {
-        console.log({ error })
-        return res.status(500).send({
-            status: "failure",
-            message: 'An error occured!'
-        })
-    }
+    // } catch (error) {
+    //     console.log({ error })
+    //     return res.status(500).send({
+    //         status: "failure",
+    //         message: 'An error occured!'
+    //     })
+    // }
 
 })
 
@@ -57,15 +75,22 @@ router.post('/login', async (req, res) => {
             message: 'No user is registered with this email!'
         })
         // if incorrect password 
-        else if (user.password !== password) return res.status(403).send({
+        else if (user.password !== getHash(password)) return res.status(403).send({
             status: 'failure',
             message: 'Incorrect password!'
         })
         // case of correct password 
-        else if (user.password === password) {
-            // token generation 
-            const token = 'token'
-            res.status(200).send({
+        else if (user.password === getHash(password)) {
+            // token generation and setting the cookie
+            const token = await createToken(userId)
+            res.cookie('accessToken', token, {
+                withCredentials: true,
+                httpOnly: true,
+                maxAge: time,
+                secure: false
+            })
+
+            return res.status(200).send({
                 status: 'success',
                 message: 'User logged in successfully',
                 token

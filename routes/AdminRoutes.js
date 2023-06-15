@@ -18,6 +18,7 @@ router.post('/add-course', async (req, res) => {
         department,
         numChapters
     } = req.body
+    
 
     try {
         // checking if a course with same name exists or not?
