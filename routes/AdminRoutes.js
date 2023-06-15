@@ -9,7 +9,15 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/add-course', async (req, res) => {
-    const { courseName, courseTitle, uploadDate, duration, instructors, department, numChapters } = req.body
+    const {
+        courseName,
+        courseTitle,
+        uploadDate,
+        duration,
+        instructors,
+        department,
+        numChapters
+    } = req.body
 
     try {
         // checking if a course with same name exists or not?
@@ -50,20 +58,79 @@ router.post('/add-course', async (req, res) => {
     }
 })
 
-router.put('/edit-course' , async(req,res) => {
+router.put('/edit-course', async (req, res) => {
+    const {
+        courseId,
+        courseName,
+        courseTitle,
+        uploadDate,
+        duration,
+        instructors,
+        department,
+        numChapters
+    } = req.body
 
+    try{
+    	const course = await Course.updateOne(
+    		{_id:courseId} ,
+    		 {$set:{
+    		 	courseName ,
+    		 	courseTitle,
+    		 	uploadDate,
+    		 	duration,
+    		 	department,
+    		 	instructors,
+    		 	numChapters
+    		 }})
+
+    	if(course.matchedCount && course.modifiedCount) return res.status(200).send({
+    			status:'success',
+    			message:'Course edited successfully'
+    		})
+    	else return res.status(404).send({
+    		status:'failure',
+    		message:'No course found!'
+    	})
+    }
+
+    catch(error) {
+    	console.log({error})
+    	return res.status(500).send({
+    		status:'failure',
+    		message:'There was an error during course updation! Please try again later.'
+    	})
+    }
 })
 
-router.delete('/remove-course' , async(req,res) => {
-
+router.delete('/remove-course', async (req, res) => {
+	const {courseId , courseName} = req.body  
+	try{
+		// deleting the course requested
+		const course = await Course.deleteOne({_id:courseId})
+		if(course.deletedCount) return res.status(200).send({
+			status:'success',
+			message:'Course removed successfully'
+		})
+		else return res.status(404).send({
+			status:'failure',
+			message:'Course not found!'
+		})
+	}
+	catch(error) {
+		console.log({error})
+		return res.status(500).send({
+			status:'failure' , 
+			message:'An error occured!'
+		})
+	}
 })
 
-router.get('/list-courses' , async(req,res) => {
-	const courses = await Course.find({})  
-	return res.status(200).send({
-		status:'success',
-		courses
-	})
+router.get('/list-courses', async (req, res) => {
+    const courses = await Course.find({})
+    return res.status(200).send({
+        status: 'success',
+        courses
+    })
 })
 
 
