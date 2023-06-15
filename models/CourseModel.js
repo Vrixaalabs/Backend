@@ -1,32 +1,31 @@
 const mongoose = require('mongoose')
-const userSchema = new mongoose.Schema({
-    firstName: {
+const courseSchema = new mongoose.Schema({
+    courseName: {
         type: String,
         required: true
     },
-    lastName: {
+    courseTitle: {
         type: String,
         required: true
     },
-    email: {
+    uploadDate: {
         type: String,
         required: true
     },
-    password: {
+    duration: {
         type: String,
         required: true
     },
-    confirmPassword: {
-        type: String,
-        required: true
-    },
+    instructors: [],
     department: {
-        type: String
+        type: String,
+        required: true
     },
-    phoneNumber: {
-        type: String
+    numChapters: {
+        type: Number,
+        required: true
     }
 })
 
 
-module.exports = mongoose.model('User' , userSchema)
+module.exports = mongoose.model('Course' , courseSchema)
