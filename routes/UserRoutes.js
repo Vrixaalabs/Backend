@@ -11,6 +11,7 @@ const getHash = (text) => {
     hash.update(text) 
     return hash.digest('hex')
 }
+console.log({settings})
 // console.log(getHash('thisisjwtsecret'))
 
 const time = 7 * 24 * 60 * 60 * 1000
