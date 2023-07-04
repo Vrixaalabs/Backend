@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const Course = require('../models/CourseModel.js')
 const Counter = require('../models/counter.js')
+const User = require('../models/UserModel.js')
 
 router.get('/', async (req, res) => {
     res.status(200).send({
@@ -162,6 +163,57 @@ router.get('/list-courses', async (req, res) => {
         courses
     })
 })
+
+
+router.get('/users/:userId', async (req, res) => {
+    try {
+        const user_id = req.params.userId;
+
+        // Find the user in the database using the user ID
+        const user = await User.findById(user_id);
+
+        if (!user) {
+            return res.status(404).send({
+                status: "failure",
+                message: "User not found"
+            });
+        }
+
+        // Exclude sensitive fields from the response, if any
+        const userProfile = {
+            id:user.userId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            department: user.department,
+            phoneNumber: user.phoneNumber,
+            address:user.address,
+            date_of_birth:user.date_of_birth,
+            gender:user.gender,
+            bio:user.biography,
+            social_media:user.social_media_links,
+            profile_picture:user.profile_picture,
+            skills:user.skills,
+            education:user.education,
+            work_experience:user.work_experience,
+            certifications:user.certifications,
+            languages:user.languages_spoken
+            // Add other fields as needed
+        };
+
+        return res.status(200).send({
+            status: "success",
+            userProfile
+        });
+    } catch (error) {
+        console.log({ error });
+        return res.status(500).send({
+            status: "failure",
+            message: "An error occurred while fetching the user profile"
+        });
+    }
+});
+
 
 
 module.exports = router
